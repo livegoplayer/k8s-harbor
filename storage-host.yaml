@@ -1,0 +1,36 @@
+# 这里是不启用nfs使用本地磁盘做持久化
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: harbor-storage
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+provisioner: kubernetes.io/no-provisioner
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: harbor-volume
+  labels:
+    type: harbor-volume-local
+spec:
+  storageClassName: harbor-storage
+  capacity:
+    storage: 21Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/nfs/harbor"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: harbor-pvc
+spec:
+  storageClassName: harbor-storage
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 21Gi

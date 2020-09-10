@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: StatefulSet 
+metadata:
+  name: postgresql-sts
+spec:
+  selector:
+    matchLabels:
+      app: postgresql
+  serviceName: postgresql-service
+  template:   
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      containers: 
+        - image: postgres:latest
+          name: postgresql-con
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: POSTGRES_PASSWORD
+            value: postgres
+          - name: POSTGRES_USER
+            value: postgres
+          - name: POSTGRES_DB
+            value: postgres
+          ports:
+          - containerPort: 5432
+            name: postgresql
+          volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: harbor-postgresql-storage
+            subPath: database
+          securityContext:
+            privileged: true
+      volumes:
+      - name: harbor-postgresql-storage
+        persistentVolumeClaim:
+          claimName: harbor-pvc
+          
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-service
+  labels:
+    app: postgresql
+spec:
+  type: NodePort
+  selector:
+      app: postgresql
+  ports:
+  - protocol : TCP
+    nodePort: 32432
+    port: 5432
+    targetPort: 5432
+

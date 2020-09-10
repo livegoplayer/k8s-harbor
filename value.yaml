@@ -1,0 +1,78 @@
+expose:
+  ingress:
+    hosts:
+      core: core.harbor.52db.club
+      notary: notary.harbor.52db.club
+
+externalURL: https://core.harbor.52db.club
+
+persistence:
+  persistentVolumeClaim:
+    registry:
+      existingClaim: "harbor-pvc"
+      subPath: registry
+    chartmuseum:
+      existingClaim: "harbor-pvc"
+      subPath: chartmuseum
+    jobservice:
+      existingClaim: "harbor-pvc"
+      subPath: jobservice
+    trivy:
+      existingClaim: "harbor-pvc"
+      subPath: trivy
+
+
+imagePullPolicy: IfNotPresent
+
+
+database:
+  # if external database is used, set "type" to "external"
+  # and fill the connection informations in "external" section
+  type: external
+  external:
+    host: "139.224.132.234"
+    port: "32432"
+    username: "postgres"
+    password: "postgres"
+    coreDatabase: "registry"
+    clairDatabase: "clair"
+    notaryServerDatabase: "notary_server"
+    notarySignerDatabase: "notary_signer"
+    # "disable" - No SSL
+    # "require" - Always SSL (skip verification)
+    # "verify-ca" - Always SSL (verify that the certificate presented by the
+    # server was signed by a trusted CA)
+    # "verify-full" - Always SSL (verify that the certification presented by the
+    # server was signed by a trusted CA and the server host name matches the one
+    # in the certificate)
+    sslmode: "disable"
+  # The maximum number of connections in the idle connection pool.
+  # If it <=0, no idle connections are retained.
+  maxIdleConns: 50
+  # The maximum number of open connections to the database.
+  # If it <= 0, then there is no limit on the number of open connections.
+  # Note: the default number of connections is 1024 for postgre of harbor.
+  maxOpenConns: 1000
+  ## Additional deployment annotations
+  podAnnotations: {}
+
+redis:
+  # if external Redis is used, set "type" to "external"
+  # and fill the connection informations in "external" section
+  type: external
+  external:
+    host: "139.224.132.234"
+    port: "32379"
+    # The "coreDatabaseIndex" must be "0" as the library Harbor
+    # used doesn't support configuring it
+    coreDatabaseIndex: "0"
+    jobserviceDatabaseIndex: "15"
+    registryDatabaseIndex: "14"
+    chartmuseumDatabaseIndex: "13"
+    clairAdapterIndex: "12"
+    trivyAdapterIndex: "11"
+    password: "myredis"
+  ## Additional deployment annotations
+  podAnnotations: {}
+
+
